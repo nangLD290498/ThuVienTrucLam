@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.ResponseObject;
+import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.service.PdfService;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,7 +26,17 @@ public class PdfController {
     }
 
     @PostMapping("/pdf/uploadAndSavePdfByPage")
-    public ResponseObject uploadAndSavePdfByPage(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public ResponseObject uploadAndSavePdfByPage(@RequestParam("file") MultipartFile multipartFile ) throws IOException {
         return pdfService.uploadAndSavePdfByPage(multipartFile);
+    }
+
+    @PostMapping("/pdf/saveBookInfor")
+    public ResponseObject saveBookInfor(@RequestBody Book book) {
+        return pdfService.saveBookInfor( book);
+    }
+
+    @PostMapping("/pdf/saveContentTable")
+    public ResponseObject saveContentTable(@RequestBody List<Map<String, Object>> mapData) {
+        return pdfService.saveContentTable(mapData);
     }
 }

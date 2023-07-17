@@ -2,6 +2,7 @@ package truclam.library.truc_lam_library.entity;
 
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.engine.internal.Cascade;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -29,8 +30,8 @@ public class Book {
     @Column(nullable = true)
     private String remarks;
 
-    @ManyToOne
-    @JoinColumn(name="category_id", nullable = true, referencedColumnName = "id")
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinColumn(name="category_id", referencedColumnName = "id")
     @ToString.Exclude
     private Category category;
 
