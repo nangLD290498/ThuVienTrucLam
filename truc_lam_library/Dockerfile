@@ -1,3 +1,7 @@
-From openjdk:8
-copy ./target/truc_lam_library-0.0.1-SNAPSHOT.jar truc_lam_library-0.0.1-SNAPSHOT.jar
-CMD ["java","-jar","truc_lam_library-0.0.1-SNAPSHOT.jar"]
+FROM maven:3.8.2-jdk-8
+
+WORKDIR /truc_lam_library
+COPY . .
+RUN mvn clean install
+
+CMD mvn spring-boot:run
