@@ -1,0 +1,36 @@
+version: "2"
+services:
+  sam-account-service-non-webflux-postgresql:
+    build:
+        context: src/main/docker
+    image: thinhvn/sam-account-non-webflux-postgresql:0.0.1
+    ports:
+      - "8080:8080"
+    restart: always
+    container_name: sam-account-non-webflux-postgresql
+    depends_on:
+      - mysql_db_sam-account_non_webflux
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_APPLICATION_NAME=sam-account-non-webflux
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db_sam-account_non_webflux:3306/truc_lam_library
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=nangld
+    networks:
+      - sam-account-network-non-webflux-postgresql
+  mysql_db_sam-account_non_webflux:
+    image: 'mysql:8.0.33-debian'
+    container_name: mysql_db_sam-account_non_webflux
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=nangld
+      - POSTGRES_DB=sam-account-prod-non-webflux
+    networks:
+      - sam-account-network-non-webflux-postgresql
+
+networks:
+  sam-account-network-non-webflux-postgresql:
+    driver: bridge
