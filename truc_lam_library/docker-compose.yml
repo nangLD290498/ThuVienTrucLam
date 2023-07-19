@@ -1,13 +1,13 @@
 version: "2"
 services:
-  sam-account-service-non-webflux-postgresql:
+  sam-account-service-mysql:
     build:
         context: .
-    image: thinhvn/sam-account-non-webflux-postgresql:0.0.1
+    image: thinhvn/sam-account-service-mysql:0.0.1
     ports:
       - "8080:8080"
     restart: always
-    container_name: sam-account-non-webflux-postgresql
+    container_name: sam-account-service-mysql
     depends_on:
       - mysql_db_sam-account_non_webflux
     environment:
