@@ -14,8 +14,8 @@ services:
       - SERVER_PORT=8080
       - SPRING_APPLICATION_NAME=sam-account-non-webflux
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db_sam-account_non_webflux:3306/truc_lam_library
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=nangld
+      - SPRING_DATASOURCE_USERNAME=developer
+      - SPRING_DATASOURCE_PASSWORD=developer
     networks:
       - sam-account-network-mysql
   mysql_db_sam-account_non_webflux:
@@ -25,9 +25,9 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=nangld
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=nangld
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=developer
+      - MYSQL_PASSWORD=developer
       - MYSQL_DB=truc_lam_library
     networks:
       - sam-account-network-mysql
