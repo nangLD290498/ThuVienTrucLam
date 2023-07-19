@@ -16,5 +16,5 @@ public interface PdfService {
 
     ResponseObject saveBookInfor(Book book);
 
-    ResponseObject saveContentTable(List<Map<String, Object>> mapData);
+    ResponseObject saveContentTable(Map<String, Object> mapData);
 }

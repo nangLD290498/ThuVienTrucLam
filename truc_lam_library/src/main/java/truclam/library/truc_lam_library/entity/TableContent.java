@@ -25,4 +25,9 @@ public class TableContent {
     @JoinColumn(name="parent")
     private TableContent parent;
 
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinColumn(name="book_id", referencedColumnName = "id")
+    @ToString.Exclude
+    private Book book;
+
 }

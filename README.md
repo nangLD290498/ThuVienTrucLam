@@ -36,93 +36,95 @@ save muc luc ----------------------------
 curl --location --request POST 'http://localhost:8080/pdf/saveContentTable' \
 --header 'Accept: application/json' \
 --header 'Content-Type: application/json' \
---data-raw '[
+--data-raw '{
+"bookName": "Nguồn an lạc",
+"contentTable": [
 {
-"headerContent" : "1. Chapter 1",
+"headerContent": "1. Chapter 1",
 "fromPage": 1,
 "toPage": 99,
-"childs" : [
+"childs": [
 {
 "id": null,
-"headerContent" : "1.1. Chapter 1.1",
+"headerContent": "1.1. Chapter 1.1",
 "fromPage": 1,
 "toPage": 20,
-"childs" : [
+"childs": [
 {
 "id": null,
-"headerContent" : "1.1.1 ASDFASDFASDF",
-"childs" : [
+"headerContent": "1.1.1 ASDFASDFASDF",
+"childs": [
 {
 "id": null,
-"headerContent" : "1.1.1.a ASDFASDF",
-"childs" : []
+"headerContent": "1.1.1.a ASDFASDF",
+"childs": []
 },
 {
 "id": null,
-"headerContent" : "1.1.1.b WERQWER",
-"childs" : []
+"headerContent": "1.1.1.b WERQWER",
+"childs": []
 },
 {
 "id": null,
-"headerContent" : "1.1.1.c QWTQRETERT",
-"childs" : []
+"headerContent": "1.1.1.c QWTQRETERT",
+"childs": []
 }
 ]
 },
 {
 "id": null,
-"headerContent" : "1.1.2 EYTEYERTYERTY",
-"childs" : [
+"headerContent": "1.1.2 EYTEYERTYERTY",
+"childs": [
 {
 "id": null,
-"headerContent" : "1.1.2.a ERTUYTURTIRUI",
+"headerContent": "1.1.2.a ERTUYTURTIRUI",
 "fromPage": 10,
 "toPage": 15,
-"childs" : []
+"childs": []
+},
+{}
+]
+}
+]
 },
 {
-
-							}
-						]
-					}
-				]
-			},
-			{
-				"id": null,
-				"headerContent" : "1.2. Chapter 1.2",
-                "fromPage": 21,
-                "toPage": 99,
-				"childs" : [
-					{
-						"id": null,
-						"headerContent" : "1.2.1 SDFGSDFGSDFG",
-						"childs" : [
-							{
-								"id": null,
-								"headerContent" : "1.2.1a QEWRWQERT",
-								"childs" : [
-                                    
-                                ]
-							}
-						]
-					}
-				]
-			}
-		]
-	},
-	{
-		"headerContent" : "2. Chapter 2",
-        "fromPage": 100,
-        "toPage": 200,
-		"childs" : [
-            {
-                "id": null,
-				"headerContent" : "2.1. Chapter 2.1",
-                "fromPage": 1,
-                "toPage": 20
-            }
-			
-		]
-	}
-]'
+"id": null,
+"headerContent": "1.2. Chapter 1.2",
+"fromPage": 21,
+"toPage": 99,
+"childs": [
+{
+"id": null,
+"headerContent": "1.2.1 SDFGSDFGSDFG",
+"childs": [
+{
+"id": null,
+"headerContent": "1.2.1a QEWRWQERT",
+"childs": []
+}
+]
+}
+]
+}
+]
+},
+{
+"headerContent": "2. Chapter 2",
+"fromPage": 100,
+"toPage": 200,
+"childs": [
+{
+"id": null,
+"headerContent": "2.1. Chapter 2.1",
+"fromPage": 1,
+"toPage": 20
+}
+]
+}
+]
+}'
 ===================================================================
+get book details
+curl --location --request GET 'http://localhost:8080/book/4213' \
+--header 'Accept: application/json' \
+--data-raw ''

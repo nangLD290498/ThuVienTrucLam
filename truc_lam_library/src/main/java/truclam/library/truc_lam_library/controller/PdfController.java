@@ -36,7 +36,7 @@ public class PdfController {
     }
 
     @PostMapping("/pdf/saveContentTable")
-    public ResponseObject saveContentTable(@RequestBody List<Map<String, Object>> mapData) {
+    public ResponseObject saveContentTable(@RequestBody Map<String, Object> mapData) {
         return pdfService.saveContentTable(mapData);
     }
 }
