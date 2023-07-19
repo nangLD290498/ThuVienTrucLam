@@ -32,7 +32,7 @@ public class PdfController {
 
     @PostMapping("/pdf/saveBookInfor")
     public ResponseObject saveBookInfor(@RequestBody Book book) {
-        logger.info("exec saveBookInfor api");
+        logger.info("execute saveBookInfor api");
         return pdfService.saveBookInfor( book);
     }
 
