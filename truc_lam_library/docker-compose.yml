@@ -25,9 +25,9 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=nangld
-      - POSTGRES_DB=sam-account-prod-non-webflux
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=nangld
+      - MYSQL_DB=truc_lam_library
     networks:
       - sam-account-network-non-webflux-postgresql
 
