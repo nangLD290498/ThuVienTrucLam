@@ -13,11 +13,11 @@ services:
     environment:
       - SERVER_PORT=8080
       - SPRING_APPLICATION_NAME=sam-account-non-webflux
-      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/truc_lam_library
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db_sam-account_non_webflux:3306/truc_lam_library
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=nangld
     networks:
-      - sam-account-network-non-webflux-postgresql
+      - sam-account-network-mysql
   mysql_db_sam-account_non_webflux:
     image: 'mysql:8.0.33-debian'
     container_name: mysql_db_sam-account_non_webflux
@@ -25,12 +25,13 @@ services:
     ports:
       - "3306:3306"
     environment:
+      - MYSQL_ROOT_PASSWORD=nangld
       - MYSQL_USER=root
       - MYSQL_PASSWORD=nangld
       - MYSQL_DB=truc_lam_library
     networks:
-      - sam-account-network-non-webflux-postgresql
+      - sam-account-network-mysql
 
 networks:
-  sam-account-network-non-webflux-postgresql:
+  sam-account-network-mysql:
     driver: bridge
