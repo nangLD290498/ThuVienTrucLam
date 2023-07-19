@@ -2,7 +2,7 @@ version: "2"
 services:
   sam-account-service-non-webflux-postgresql:
     build:
-        context: src/main/docker
+        context: .
     image: thinhvn/sam-account-non-webflux-postgresql:0.0.1
     ports:
       - "8080:8080"
@@ -13,7 +13,7 @@ services:
     environment:
       - SERVER_PORT=8080
       - SPRING_APPLICATION_NAME=sam-account-non-webflux
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db_sam-account_non_webflux:3306/truc_lam_library
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/truc_lam_library
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=nangld
     networks:
