@@ -68,6 +68,7 @@ public class PdfServiceImpl implements PdfService{
                 pageList.add(page);
             }
             reader.close();
+            logger.info("Saving book ....");
             pageRepository.saveAll(pageList);
             respose.setStatus(StatusEnum.OK.toString());
             respose.setMessage(SuccessMessage.SAVED_BOOK_CONTENT);
@@ -80,7 +81,7 @@ public class PdfServiceImpl implements PdfService{
     }
 
     @Override
-    public ResponseObject uploadAndSavePdfByPage(MultipartFile multipartFile) throws IOException {
+    public ResponseObject upload(MultipartFile multipartFile) throws IOException {
         ResponseObject respose = new ResponseObject();
         String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
         if(!fileName.endsWith(".pdf")){
@@ -92,6 +93,7 @@ public class PdfServiceImpl implements PdfService{
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
+        respose.setContent(fileName);
         return respose;
     }
 
@@ -105,9 +107,10 @@ public class PdfServiceImpl implements PdfService{
             respose.setMessage(ErrorMessage.EXISTED_BOOK);
             return respose;
         }
-        bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
+        respose.setContent(savedBook);
         return respose;
     }
 
@@ -126,6 +129,25 @@ public class PdfServiceImpl implements PdfService{
         saveContentTable(headerlist, book, null);
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_TABLE_CONTENT);
+        return respose;
+    }
+
+    @Override
+    public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile) throws IOException {
+        ResponseObject respose = new ResponseObject<>();
+        //Save book infor
+        ResponseObject resSave = saveBookInfor(book);
+        //Upload
+        ResponseObject res = upload(multipartFile);
+        //Save content to db
+        String fileName = res.getContent().toString().substring(0, res.getContent().toString().length()-4);
+        savePdfByPage(fileName, book.getName());
+        //Save content table to db
+        logger.info("saving headers of book: {}", book.toString());
+        saveContentTable(headerlist, (Book) resSave.getContent(), null);
+
+        respose.setStatus(StatusEnum.OK.toString());
+        respose.setMessage(SuccessMessage.SAVED_BOOK);
         return respose;
     }
 
