@@ -12,9 +12,11 @@ import java.util.Map;
 @Service
 public interface PdfService {
     ResponseObject savePdfByPage(String pdfName, String bookName);
-    ResponseObject uploadAndSavePdfByPage(MultipartFile multipartFile) throws IOException;
+    ResponseObject upload(MultipartFile multipartFile) throws IOException;
 
     ResponseObject saveBookInfor(Book book);
 
-    ResponseObject saveContentTable(List<Map<String, Object>> mapData);
+    ResponseObject saveContentTable(Map<String, Object> mapData);
+
+    ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile) throws IOException;
 }

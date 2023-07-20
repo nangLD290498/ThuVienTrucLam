@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class PdfServiceImpl implements PdfService{
@@ -67,6 +68,7 @@ public class PdfServiceImpl implements PdfService{
                 pageList.add(page);
             }
             reader.close();
+            logger.info("Saving book ....");
             pageRepository.saveAll(pageList);
             respose.setStatus(StatusEnum.OK.toString());
             respose.setMessage(SuccessMessage.SAVED_BOOK_CONTENT);
@@ -79,7 +81,7 @@ public class PdfServiceImpl implements PdfService{
     }
 
     @Override
-    public ResponseObject uploadAndSavePdfByPage(MultipartFile multipartFile) throws IOException {
+    public ResponseObject upload(MultipartFile multipartFile) throws IOException {
         ResponseObject respose = new ResponseObject();
         String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
         if(!fileName.endsWith(".pdf")){
@@ -91,6 +93,7 @@ public class PdfServiceImpl implements PdfService{
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
+        respose.setContent(fileName);
         return respose;
     }
 
@@ -104,27 +107,57 @@ public class PdfServiceImpl implements PdfService{
             respose.setMessage(ErrorMessage.EXISTED_BOOK);
             return respose;
         }
-        bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
+        respose.setContent(savedBook);
         return respose;
     }
 
     @Override
-    public ResponseObject saveContentTable(List<Map<String, Object>> mapData) {
+    public ResponseObject saveContentTable(Map<String, Object> mapData) {
         ResponseObject respose = new ResponseObject();
-        saveContentTable(mapData, null);
+        String bookName = mapData.get("bookName").toString();
+        List<Map<String, Object>> headerlist = (ArrayList) mapData.get("contentTable");
+        Book book =bookRepository.findByName(bookName);
+        if(book==null){
+            respose.setStatus(StatusEnum.NOK.toString());
+            respose.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return respose;
+        }
+        logger.info("saving headers of book: {}", book.toString());
+        saveContentTable(headerlist, book, null);
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_TABLE_CONTENT);
         return respose;
     }
 
-    public void saveContentTable(List<Map<String, Object>> childs, TableContent parent){
+    @Override
+    public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile) throws IOException {
+        ResponseObject respose = new ResponseObject<>();
+        //Save book infor
+        ResponseObject resSave = saveBookInfor(book);
+        //Upload
+        ResponseObject res = upload(multipartFile);
+        //Save content to db
+        String fileName = res.getContent().toString().substring(0, res.getContent().toString().length()-4);
+        savePdfByPage(fileName, book.getName());
+        //Save content table to db
+        logger.info("saving headers of book: {}", book.toString());
+        saveContentTable(headerlist, (Book) resSave.getContent(), null);
+
+        respose.setStatus(StatusEnum.OK.toString());
+        respose.setMessage(SuccessMessage.SAVED_BOOK);
+        return respose;
+    }
+
+    public void saveContentTable(List<Map<String, Object>> childs,Book book , TableContent parent){
         List<TableContent> tableContents = new ArrayList<>();
         for (Map<String, Object> item: childs) {
             TableContent header = MapToObject.mapToTableContent(item);
             if(header == null) continue;
             header.setParent(parent);
+            header.setBook(book);
             tableContents.add(header);
             logger.info("saving header: {}", header.toString());
         }
@@ -141,16 +174,20 @@ public class PdfServiceImpl implements PdfService{
             if(item.containsKey("childs")){
                 List<Map<String, Object>> subList = (ArrayList<Map<String, Object>>) item.get("childs");
                 if(subList==null||subList.size()==0) continue;
-                saveContentTable(subList, subParent);
+                saveContentTable(subList,book , subParent);
             }
         }
     }
 
     public TableContent getParentHeader(List<TableContent> savedHeaders, TableContent header){
         for (TableContent tc: savedHeaders) {
-            if(((tc.getHeaderContent()==null && header.getHeaderContent() == null) || (tc.getHeaderContent().equals(header.getHeaderContent())))
-                    || tc.getFromPage() == header.getFromPage()
-                    || tc.getToPage() == header.getToPage()){
+            String tcHeader = Optional.of(tc.getHeaderContent()).orElse("");
+            String hHeader = Optional.of(header.getHeaderContent()).orElse("");
+            int tcFromPage = tc.getFromPage()==null?-1: tc.getFromPage();
+            int hFromPage = header.getFromPage()==null?-1: header.getFromPage();
+            int tcToPage = tc.getToPage()==null?-1: tc.getToPage();
+            int hToPage = header.getToPage()==null?-1: header.getToPage();
+            if(tcHeader.equals(hHeader) && tcFromPage==hFromPage && tcToPage==hToPage){
                 return tc;
             }
         }

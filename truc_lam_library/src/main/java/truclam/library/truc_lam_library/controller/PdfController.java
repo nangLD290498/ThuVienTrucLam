@@ -1,5 +1,7 @@
 package truclam.library.truc_lam_library.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.service.PdfService;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +28,9 @@ public class PdfController {
         return pdfService.savePdfByPage(map.get("pdfName"), map.get("bookName"));
     }
 
-    @PostMapping("/pdf/uploadAndSavePdfByPage")
-    public ResponseObject uploadAndSavePdfByPage(@RequestParam("file") MultipartFile multipartFile ) throws IOException {
-        return pdfService.uploadAndSavePdfByPage(multipartFile);
+    @PostMapping("/pdf/upload")
+    public ResponseObject upload(@RequestParam("file") MultipartFile multipartFile ) throws IOException {
+        return pdfService.upload(multipartFile);
     }
 
     @PostMapping("/pdf/saveBookInfor")
@@ -37,7 +40,24 @@ public class PdfController {
     }
 
     @PostMapping("/pdf/saveContentTable")
-    public ResponseObject saveContentTable(@RequestBody List<Map<String, Object>> mapData) {
+    public ResponseObject saveContentTable(@RequestBody Map<String, Object> mapData, @RequestParam String test) {
         return pdfService.saveContentTable(mapData);
+    }
+
+    @PostMapping("/pdf/saveBookFullFlow")
+    public ResponseObject saveBookFullFlow(@RequestParam String bookString,
+                                           @RequestParam String tableContent,
+                                           @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        //Base64 to json string
+        byte[] decodedBytesBook = Base64.getDecoder().decode(bookString);
+        bookString = new String(decodedBytesBook);
+
+        byte[] decodedBytesTableContent = Base64.getDecoder().decode(tableContent);
+        tableContent = new String(decodedBytesTableContent);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Book book = mapper.readValue(bookString, Book.class);
+        List<Map<String, Object>> tableContentList = mapper.readValue(tableContent, new TypeReference<List<Map<String, Object>>>(){});
+        return pdfService.saveBookFullFlow(book, tableContentList, multipartFile);
     }
 }
