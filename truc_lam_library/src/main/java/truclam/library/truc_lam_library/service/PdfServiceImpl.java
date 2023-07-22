@@ -154,6 +154,7 @@ public class PdfServiceImpl implements PdfService{
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK);
+        respose.setContent((Book) resSave.getContent());
         return respose;
     }
 
