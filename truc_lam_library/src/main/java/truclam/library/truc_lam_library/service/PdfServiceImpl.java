@@ -23,10 +23,7 @@ import truclam.library.truc_lam_library.util.FileUploadUtil;
 import truclam.library.truc_lam_library.util.MapToObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PdfServiceImpl implements PdfService{
@@ -93,7 +90,10 @@ public class PdfServiceImpl implements PdfService{
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
-        respose.setContent(fileName);
+        Map<String, String> content = new HashMap<>();
+        content.put("fileCode", filecode);
+        content.put("fileName", fileName);
+        respose.setContent(content);
         return respose;
     }
 
@@ -135,13 +135,19 @@ public class PdfServiceImpl implements PdfService{
     @Override
     public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile) throws IOException {
         ResponseObject respose = new ResponseObject<>();
-        //Save book infor
-        ResponseObject resSave = saveBookInfor(book);
         //Upload
         ResponseObject res = upload(multipartFile);
+        if(res.getStatus().toString().equals(StatusEnum.NOK.toString())) return res;
+        String fileName = ((Map<String, String>) res.getContent()).get("fileName");
+        fileName = ((Map<String, String>) res.getContent()).get("fileName").substring(0, fileName.length()-4);
+        String fieCode = ((Map<String, String>) res.getContent()).get("fileCode").toString();
+        //Save book infor
+        book.setRemarks(fieCode);
+        ResponseObject resSave = saveBookInfor(book);
+        if(resSave.getStatus().toString().equals(StatusEnum.NOK.toString())) return resSave;
         //Save content to db
-        String fileName = res.getContent().toString().substring(0, res.getContent().toString().length()-4);
-        savePdfByPage(fileName, book.getName());
+        res = savePdfByPage(fileName, book.getName());
+        if(res.getStatus().toString().equals(StatusEnum.NOK.toString())) return res;
         //Save content table to db
         logger.info("saving headers of book: {}", book.toString());
         saveContentTable(headerlist, (Book) resSave.getContent(), null);
@@ -149,6 +155,23 @@ public class PdfServiceImpl implements PdfService{
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK);
         return respose;
+    }
+
+    @Override
+    public ResponseObject getPDF(Integer id) {
+        ResponseObject responseObject = new ResponseObject();
+        Optional<Book> b = bookRepository.findById(id);
+        if(b.isPresent()){
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.PDF_FOUND);
+            responseObject.setContent(b.get().getRemarks());
+            logger.info("pdf found : {}",  b.get().getRemarks());
+        }else{
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            logger.info("no book found");
+        }
+        return responseObject;
     }
 
     public void saveContentTable(List<Map<String, Object>> childs,Book book , TableContent parent){
