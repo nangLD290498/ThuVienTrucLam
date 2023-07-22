@@ -21,7 +21,7 @@ public class FileUploadUtil {
         try (InputStream inputStream = multipartFile.getInputStream()) {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            //path = filePath.toFile().getCanonicalPath();
+            path = filePath.toFile().getCanonicalPath();
         } catch (IOException ioe) {
             throw new IOException("File đã tồn tại " + fileName, ioe);
         }
