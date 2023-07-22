@@ -35,11 +35,12 @@ public class PdfController {
 
     @PostMapping("/pdf/saveBookInfor")
     public ResponseObject saveBookInfor(@RequestBody Book book) {
+        logger.info("execute saveBookInfor api");
         return pdfService.saveBookInfor( book);
     }
 
     @PostMapping("/pdf/saveContentTable")
-    public ResponseObject saveContentTable(@RequestBody Map<String, Object> mapData, @RequestParam String test) {
+    public ResponseObject saveContentTable(@RequestBody Map<String, Object> mapData) {
         return pdfService.saveContentTable(mapData);
     }
 
@@ -59,4 +60,10 @@ public class PdfController {
         List<Map<String, Object>> tableContentList = mapper.readValue(tableContent, new TypeReference<List<Map<String, Object>>>(){});
         return pdfService.saveBookFullFlow(book, tableContentList, multipartFile);
     }
+
+    @GetMapping("/pdf/get/{id}")
+    public ResponseObject getPdf(@PathVariable Integer id) {
+        return pdfService.getPDF(id);
+    }
+
 }

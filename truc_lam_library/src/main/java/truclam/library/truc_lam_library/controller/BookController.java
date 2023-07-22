@@ -22,4 +22,15 @@ public class BookController {
         return bookService.getBookDetails(id);
     }
 
+    @GetMapping("/book/getList/{page}/{size}/{order}/{column}")
+    public ResponseObject savePdfByPage(@RequestParam(required = false) String category,
+                                        @RequestParam(required = false) String search,
+                                        @RequestParam(required = false) String isContaining,
+                                        @PathVariable Integer page,
+                                        @PathVariable Integer size,
+                                        @PathVariable String order,
+                                        @PathVariable String column) {
+        return bookService.getList(category, search, page, size, order, column, isContaining);
+    }
+
 }

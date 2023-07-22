@@ -1,0 +1,19 @@
+[Unit]
+Description=ThuVienTrucLam Application
+After=syslog.target network.target
+
+[Service]
+SuccessExitStatus=143
+
+User=appuser
+Group=appgroup
+
+Type=simple
+
+Environment="JAVA_HOME=/usr"
+WorkingDirectory=/home/ubuntu/apps-deployment
+ExecStart=${JAVA_HOME}/bin/java -jar /home/ubuntu/apps-deployment/truc_lam_library-0.0.1-SNAPSHOT.jar
+ExecStop=/bin/kill -15 $MAINPID
+
+[Install]
+WantedBy=multi-user.target
