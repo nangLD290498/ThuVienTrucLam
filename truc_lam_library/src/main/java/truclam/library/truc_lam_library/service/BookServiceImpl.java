@@ -15,6 +15,7 @@ import truclam.library.truc_lam_library.constant.SuccessMessage;
 import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
+import truclam.library.truc_lam_library.repository.PageRepository;
 import truclam.library.truc_lam_library.util.PageUtil;
 
 import java.util.*;
@@ -25,6 +26,9 @@ public class BookServiceImpl implements BookService {
 
     @Autowired
     BookRepository bookRepository;
+
+    @Autowired
+    PageRepository pageRepository;
     @Override
     public ResponseObject getBookDetails(Integer id) {
         ResponseObject responseObject = new ResponseObject();
@@ -119,9 +123,40 @@ public class BookServiceImpl implements BookService {
         return responseObject;
     }
 
+    @Override
+    public ResponseObject specialSearch(String category, String searchText, Integer page, Integer size) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap = new HashMap<>();
+        Pageable pageable = PageRequest.of(page-1, size);
+        Page<truclam.library.truc_lam_library.entity.Page> pageObject = null;
+        if(category!=null && "*".equals(category)) {
+            pageObject = pageRepository.findByContentContaining(searchText, pageable);
+        }else{
+            pageObject = pageRepository.findByContentAndCategory(searchText, category, pageable);
+        }
+        if(pageObject.hasContent()){
+            for (truclam.library.truc_lam_library.entity.Page p : pageObject.getContent()) {
+                if(p.getBook() != null){
+                    p.getBook().setTableContents(null);
+                    if(p.getBook().getCategory()!=null){
+                        p.getBook().getCategory().setBooks(null);
+                    }
+                }
+            }
+
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
+            responseObject.setContent(resultMap);
+        }else {
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return responseObject;
+        }
+        return responseObject;
+    }
+
     Map<String, Object> convertToMap(Book book){
         Map<String, Object> result = new HashMap<>();
-
         List<Map<String, Object>> tableContentFormatted = findChildrenHeaders(book.getTableContents(), null);
         if(book.getTableContents()!=null && book.getTableContents().size()>0) {
             book.setTableContents(null);

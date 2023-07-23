@@ -33,4 +33,13 @@ public class BookController {
         return bookService.getList(category, search, page, size, order, column, isContaining);
     }
 
+    @GetMapping("/book/specialSearch/{page}/{size}")
+    public ResponseObject specialSearch(@RequestParam String searchText,
+                                        @PathVariable Integer page,
+                                        @RequestParam String category,
+                                        @PathVariable Integer size) {
+        return bookService.specialSearch(category ,searchText, page, size);
+    }
+
+
 }

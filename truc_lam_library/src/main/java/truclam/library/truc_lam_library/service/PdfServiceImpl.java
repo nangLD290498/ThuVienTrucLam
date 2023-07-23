@@ -14,9 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.*;
 import truclam.library.truc_lam_library.controller.PdfController;
 import truclam.library.truc_lam_library.entity.Book;
+import truclam.library.truc_lam_library.entity.Category;
 import truclam.library.truc_lam_library.entity.Page;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
+import truclam.library.truc_lam_library.repository.CategoryRepository;
 import truclam.library.truc_lam_library.repository.PageRepository;
 import truclam.library.truc_lam_library.repository.TableContentRepository;
 import truclam.library.truc_lam_library.util.FileUploadUtil;
@@ -35,6 +37,9 @@ public class PdfServiceImpl implements PdfService{
 
     @Autowired
     PageRepository pageRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Autowired
     TableContentRepository tableContentRepository;
