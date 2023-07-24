@@ -8,14 +8,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import truclam.library.truc_lam_library.constant.ErrorMessage;
-import truclam.library.truc_lam_library.constant.ResponseObject;
-import truclam.library.truc_lam_library.constant.StatusEnum;
-import truclam.library.truc_lam_library.constant.SuccessMessage;
+import truclam.library.truc_lam_library.constant.*;
 import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
 import truclam.library.truc_lam_library.repository.PageRepository;
+import truclam.library.truc_lam_library.util.ObjectConvertor;
 import truclam.library.truc_lam_library.util.PageUtil;
 
 import java.util.*;
@@ -36,15 +34,7 @@ public class BookServiceImpl implements BookService {
         if(b.isPresent()){
             responseObject.setStatus(StatusEnum.OK.toString());
             responseObject.setMessage(SuccessMessage.BOOK_FOUND);
-            if(b.get().getCategory()!=null){
-                b.get().getCategory().setBooks(null);
-            }
-            if(b.get().getTableContents()!=null){
-                for (TableContent t: b.get().getTableContents()) {
-                    t.setBook(null);
-                }
-            }
-            responseObject.setContent(convertToMap(b.get()));
+            responseObject.setContent(ObjectConvertor.objectToMap(b.get()));
             logger.info("book found : {}",  b.get());
         }else{
             responseObject.setStatus(StatusEnum.NOK.toString());
@@ -112,7 +102,7 @@ public class BookServiceImpl implements BookService {
         List<Map<String, Object>> resultList = new ArrayList<>();
         if(pageObject.hasContent()) {
             for (Book b: pageObject.getContent()) {
-                Map<String, Object> bookMap = convertToMap(b);
+                Map<String, Object> bookMap = ObjectConvertor.objectToMap(b);
                 resultList.add(bookMap);
             }
         }
@@ -155,37 +145,28 @@ public class BookServiceImpl implements BookService {
         return responseObject;
     }
 
-    Map<String, Object> convertToMap(Book book){
-        Map<String, Object> result = new HashMap<>();
-        List<Map<String, Object>> tableContentFormatted = findChildrenHeaders(book.getTableContents(), null);
-        if(book.getTableContents()!=null && book.getTableContents().size()>0) {
-            book.setTableContents(null);
+    @Override
+    public ResponseObject getBooks(Integer page) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap;
+        Pageable pageable = PageRequest.of(page-1, Constant.PAGE_SIZE);
+        Page<Book> pageObject = bookRepository.findAll(pageable);
+        if(pageObject.hasContent()){
+            List<Map<String, Object>> bookList = new ArrayList<>();
+            for (Book book : pageObject.getContent()) {
+                Map<String, Object> bookMap = ObjectConvertor.objectToMap(book);
+                bookList.add(bookMap);
+            }
+            resultMap = PageUtil.convertToPageObject(pageObject, bookList);
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
+            responseObject.setContent(resultMap);
+        }else {
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return responseObject;
         }
-        if(book.getCategory() !=null){
-            book.getCategory().setBooks(null);
-        }
-        result.put("tableContent", tableContentFormatted);
-        result.put("bookDetails", book);
-        return result;
+        return responseObject;
     }
 
-    List<Map<String, Object>> findChildrenHeaders(List<TableContent> headers, TableContent parent){
-        if(headers==null||headers.size()==0) return null;
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (TableContent header: headers) {
-            Map<String, Object> headerAfter = new HashMap<>();
-            List<Map<String, Object>> childs = new ArrayList<>();
-            //if((header.getParent()==null && parent == null) || header.getParent().equals(parent)) {
-            if(header.getParent() == parent) {
-                logger.info("processing header: {}",header.toString());
-                headerAfter.put("headerContent", header.getHeaderContent());
-                headerAfter.put("fromPage", header.getFromPage());
-                headerAfter.put("toPage", header.getToPage());
-                childs = findChildrenHeaders(headers, header);
-                headerAfter.put("childs", childs);
-                result.add(headerAfter);
-            }
-        }
-        return result;
-    }
 }

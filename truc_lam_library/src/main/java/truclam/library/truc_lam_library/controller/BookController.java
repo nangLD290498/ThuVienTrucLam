@@ -17,13 +17,13 @@ public class BookController {
     @Autowired
     BookService bookService;
 
-    @GetMapping("/book/{id}")
-    public ResponseObject savePdfByPage(@PathVariable Integer id) {
+    @GetMapping("/books/{id}")
+    public ResponseObject getBookByid(@PathVariable Integer id) {
         return bookService.getBookDetails(id);
     }
 
     @GetMapping("/book/getList/{page}/{size}/{order}/{column}")
-    public ResponseObject savePdfByPage(@RequestParam(required = false) String category,
+    public ResponseObject getBookList(@RequestParam(required = false) String category,
                                         @RequestParam(required = false) String search,
                                         @RequestParam(required = false) String isContaining,
                                         @PathVariable Integer page,
@@ -41,5 +41,9 @@ public class BookController {
         return bookService.specialSearch(category ,searchText, page, size);
     }
 
+    @GetMapping("/books")
+    public ResponseObject getBooks(@RequestParam Integer page) {
+        return bookService.getBooks(page);
+    }
 
 }

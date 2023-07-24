@@ -10,4 +10,6 @@ public interface BookService {
     ResponseObject getList(String category, String search, Integer page, Integer size, String order, String column, String isContaining);
 
     ResponseObject specialSearch(String category, String searchText, Integer page, Integer size);
+
+    ResponseObject getBooks(Integer page);
 }

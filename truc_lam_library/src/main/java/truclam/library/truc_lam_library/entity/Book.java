@@ -27,6 +27,12 @@ public class Book {
     @Column
     private String publishedYear;
 
+    @Column
+    private String thumbnailUrl;
+
+    @Column
+    private String pdfUrl;
+
     @Column(nullable = true)
     private String remarks;
 

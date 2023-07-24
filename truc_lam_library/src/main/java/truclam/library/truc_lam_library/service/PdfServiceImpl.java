@@ -6,15 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.*;
-import truclam.library.truc_lam_library.controller.PdfController;
 import truclam.library.truc_lam_library.entity.Book;
-import truclam.library.truc_lam_library.entity.Category;
 import truclam.library.truc_lam_library.entity.Page;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
@@ -22,7 +19,7 @@ import truclam.library.truc_lam_library.repository.CategoryRepository;
 import truclam.library.truc_lam_library.repository.PageRepository;
 import truclam.library.truc_lam_library.repository.TableContentRepository;
 import truclam.library.truc_lam_library.util.FileUploadUtil;
-import truclam.library.truc_lam_library.util.MapToObject;
+import truclam.library.truc_lam_library.util.ObjectConvertor;
 
 import java.io.IOException;
 import java.util.*;
@@ -47,17 +44,18 @@ public class PdfServiceImpl implements PdfService{
     @Value("${filePath}")
     String path;
 
-    @Autowired
-    private ResourceLoader resourceLoader;
-    @Override
-    public ResponseObject savePdfByPage(String pdfName, String bookName) {
+    @Value("${splitting}")
+    String splitting;
+
+    public ResponseObject savePdfByPage(String pdfName, String bookName, Integer id) {
         ResponseObject respose = new ResponseObject();
         Book book = bookRepository.findByName(bookName);
         List<Page> pageList = new ArrayList<>();
         PdfReader reader = null;
         try {
             logger.info("path: {}", path);
-            reader = new PdfReader(path.concat(pdfName).concat(".pdf"));
+            String filePath = path.concat(String.valueOf(book.getId())).concat(splitting).concat("pdf").concat(splitting);
+            reader = new PdfReader(filePath.concat(pdfName).concat(".pdf"));
             int pages = reader.getNumberOfPages();
             for (int i = 1; i <= pages; i++) {
                 StringBuilder text = new StringBuilder();
@@ -82,27 +80,32 @@ public class PdfServiceImpl implements PdfService{
         return respose;
     }
 
-    @Override
-    public ResponseObject upload(MultipartFile multipartFile) throws IOException {
+    public ResponseObject upload(MultipartFile multipartFile, MultipartFile thumbnailPic, Book book) throws IOException {
         ResponseObject respose = new ResponseObject();
         String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+        String picName = StringUtils.cleanPath(thumbnailPic.getOriginalFilename());
         if(!fileName.endsWith(".pdf")){
             respose.setStatus(StatusEnum.NOK.toString());
             respose.setMessage(ErrorMessage.NOT_PDF);
             return respose;
         }
-        String filecode = FileUploadUtil.saveFile(fileName, multipartFile, path);
+        String filePath = path.concat(String.valueOf(book.getId())).concat(splitting).concat("pdf");
+        String picPath = path.concat(String.valueOf(book.getId())).concat(splitting).concat("images");
+        filePath = FileUploadUtil.saveFile(fileName, multipartFile, filePath);
+        picPath = FileUploadUtil.saveFile(picName, thumbnailPic, picPath);
 
+        //save path
+        book.setPdfUrl(filePath);
+        book.setThumbnailUrl(picPath);
+        bookRepository.save(book);
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
         Map<String, String> content = new HashMap<>();
-        content.put("fileCode", filecode);
         content.put("fileName", fileName);
         respose.setContent(content);
         return respose;
     }
 
-    @Override
     public ResponseObject saveBookInfor(Book book) {
         ResponseObject respose = new ResponseObject();
         //save book infor to db
@@ -119,7 +122,6 @@ public class PdfServiceImpl implements PdfService{
         return respose;
     }
 
-    @Override
     public ResponseObject saveContentTable(Map<String, Object> mapData) {
         ResponseObject respose = new ResponseObject();
         String bookName = mapData.get("bookName").toString();
@@ -138,28 +140,28 @@ public class PdfServiceImpl implements PdfService{
     }
 
     @Override
-    public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile) throws IOException {
+    public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile, MultipartFile thumbnailPic) throws IOException {
         ResponseObject respose = new ResponseObject<>();
-        //Upload
-        ResponseObject res = upload(multipartFile);
-        if(res.getStatus().toString().equals(StatusEnum.NOK.toString())) return res;
-        String fileName = ((Map<String, String>) res.getContent()).get("fileName");
-        fileName = ((Map<String, String>) res.getContent()).get("fileName").substring(0, fileName.length()-4);
-        String fieCode = ((Map<String, String>) res.getContent()).get("fileCode").toString();
-        //Save book infor
-        book.setRemarks(fieCode);
+
+        logger.info("Saving book infor...");
         ResponseObject resSave = saveBookInfor(book);
-        if(resSave.getStatus().toString().equals(StatusEnum.NOK.toString())) return resSave;
-        //Save content to db
-        res = savePdfByPage(fileName, book.getName());
-        if(res.getStatus().toString().equals(StatusEnum.NOK.toString())) return res;
-        //Save content table to db
-        logger.info("saving headers of book: {}", book.toString());
+        if(resSave.getStatus().equals(StatusEnum.NOK.toString())) return resSave;
+
+        logger.info("uploading pdf...");
+        ResponseObject res = upload(multipartFile, thumbnailPic, (Book) resSave.getContent());
+        if(res.getStatus().equals(StatusEnum.NOK.toString())) return res;
+        String fileName = ((Map<String, String>) res.getContent()).get("fileName");
+
+        logger.info("Saving book content...");
+        res = savePdfByPage(fileName.substring(0, fileName.length()-4), book.getName(), book.getId());
+        if(res.getStatus().equals(StatusEnum.NOK.toString())) return res;
+
+        logger.info("saving headers of book...");
         saveContentTable(headerlist, (Book) resSave.getContent(), null);
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK);
-        respose.setContent((Book) resSave.getContent());
+        respose.setContent(resSave.getContent());
         return respose;
     }
 
@@ -170,7 +172,7 @@ public class PdfServiceImpl implements PdfService{
         if(b.isPresent()){
             responseObject.setStatus(StatusEnum.OK.toString());
             responseObject.setMessage(SuccessMessage.PDF_FOUND);
-            responseObject.setContent(b.get().getRemarks());
+            responseObject.setContent(b.get().getPdfUrl());
             logger.info("pdf found : {}",  b.get().getRemarks());
         }else{
             responseObject.setStatus(StatusEnum.NOK.toString());
@@ -183,7 +185,7 @@ public class PdfServiceImpl implements PdfService{
     public void saveContentTable(List<Map<String, Object>> childs,Book book , TableContent parent){
         List<TableContent> tableContents = new ArrayList<>();
         for (Map<String, Object> item: childs) {
-            TableContent header = MapToObject.mapToTableContent(item);
+            TableContent header = ObjectConvertor.mapToTableContent(item);
             if(header == null) continue;
             header.setParent(parent);
             header.setBook(book);
@@ -197,7 +199,7 @@ public class PdfServiceImpl implements PdfService{
 
         for (Map<String, Object> item: childs) {
             if(savedHeaders == null) continue;
-            TableContent header = MapToObject.mapToTableContent(item);
+            TableContent header = ObjectConvertor.mapToTableContent(item);
             if(header==null) continue;
             TableContent subParent = getParentHeader(savedHeaders, header);
             if(item.containsKey("childs")){

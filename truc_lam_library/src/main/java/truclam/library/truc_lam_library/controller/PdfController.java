@@ -19,35 +19,15 @@ import java.util.Map;
 @RestController
 public class PdfController {
     Logger logger = LoggerFactory.getLogger(PdfController.class);
-
     @Autowired
     PdfService pdfService;
-
-    @PostMapping("/pdf/savePdfByPage")
-    public ResponseObject savePdfByPage(@RequestBody Map<String, String> map) {
-        return pdfService.savePdfByPage(map.get("pdfName"), map.get("bookName"));
-    }
-
-    @PostMapping("/pdf/upload")
-    public ResponseObject upload(@RequestParam("file") MultipartFile multipartFile ) throws IOException {
-        return pdfService.upload(multipartFile);
-    }
-
-    @PostMapping("/pdf/saveBookInfor")
-    public ResponseObject saveBookInfor(@RequestBody Book book) {
-        logger.info("execute saveBookInfor api");
-        return pdfService.saveBookInfor( book);
-    }
-
-    @PostMapping("/pdf/saveContentTable")
-    public ResponseObject saveContentTable(@RequestBody Map<String, Object> mapData) {
-        return pdfService.saveContentTable(mapData);
-    }
 
     @PostMapping("/pdf/saveBookFullFlow")
     public ResponseObject saveBookFullFlow(@RequestParam String bookString,
                                            @RequestParam String tableContent,
-                                           @RequestParam("file") MultipartFile multipartFile) throws IOException {
+                                           @RequestParam("file") MultipartFile multipartFile,
+                                           @RequestParam("thumbnailPic") MultipartFile thumbnailPic
+                                            ) throws IOException {
         //Base64 to json string
         byte[] decodedBytesBook = Base64.getDecoder().decode(bookString);
         bookString = new String(decodedBytesBook);
@@ -58,7 +38,7 @@ public class PdfController {
         ObjectMapper mapper = new ObjectMapper();
         Book book = mapper.readValue(bookString, Book.class);
         List<Map<String, Object>> tableContentList = mapper.readValue(tableContent, new TypeReference<List<Map<String, Object>>>(){});
-        return pdfService.saveBookFullFlow(book, tableContentList, multipartFile);
+        return pdfService.saveBookFullFlow(book, tableContentList, multipartFile, thumbnailPic);
     }
 
     @GetMapping("/pdf/get/{id}")
