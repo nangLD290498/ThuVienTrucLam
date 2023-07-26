@@ -2,6 +2,7 @@ package truclam.library.truc_lam_library.service;
 
 import org.springframework.stereotype.Service;
 import truclam.library.truc_lam_library.constant.ResponseObject;
+import truclam.library.truc_lam_library.entity.Book;
 
 @Service
 public interface BookService {
@@ -12,4 +13,6 @@ public interface BookService {
     ResponseObject specialSearch(String category, String searchText, Integer page, Integer size);
 
     ResponseObject getBooks(Integer page);
+
+    Book getById(Integer id);
 }

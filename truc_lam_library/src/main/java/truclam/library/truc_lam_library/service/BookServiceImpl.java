@@ -45,6 +45,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Book getById(Integer id) {
+        return bookRepository.findById(id).get();
+    }
+
+    @Override
     public ResponseObject getList(String category, String search, Integer page, Integer size, String order, String column, String isContaining) {
         ResponseObject responseObject = new ResponseObject();
         Pageable pageable = null;
