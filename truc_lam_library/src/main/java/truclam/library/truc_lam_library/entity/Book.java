@@ -45,4 +45,5 @@ public class Book {
     @JoinColumn(name = "book_id", referencedColumnName = "id")
     @ToString.Exclude
     private List<TableContent> tableContents ;
+
 }

@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.*;
 import truclam.library.truc_lam_library.entity.Book;
+import truclam.library.truc_lam_library.entity.Category;
 import truclam.library.truc_lam_library.entity.Page;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
@@ -106,6 +108,7 @@ public class PdfServiceImpl implements PdfService{
         return respose;
     }
 
+
     public ResponseObject saveBookInfor(Book book) {
         ResponseObject respose = new ResponseObject();
         //save book infor to db
@@ -114,6 +117,10 @@ public class PdfServiceImpl implements PdfService{
             respose.setStatus(StatusEnum.NOK.toString());
             respose.setMessage(ErrorMessage.EXISTED_BOOK);
             return respose;
+        }
+        Category category = categoryRepository.findByName(book.getCategory().getName());
+        if(category!=null){
+            book.setCategory(category);
         }
         Book savedBook = bookRepository.save(book);
         respose.setStatus(StatusEnum.OK.toString());
@@ -140,6 +147,7 @@ public class PdfServiceImpl implements PdfService{
     }
 
     @Override
+    @Transactional
     public ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile, MultipartFile thumbnailPic) throws IOException {
         ResponseObject respose = new ResponseObject<>();
 
@@ -161,7 +169,7 @@ public class PdfServiceImpl implements PdfService{
 
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.SAVED_BOOK);
-        respose.setContent(resSave.getContent());
+        //respose.setContent(resSave.getContent());
         return respose;
     }
 

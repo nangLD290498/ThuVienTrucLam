@@ -6,11 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import truclam.library.truc_lam_library.constant.Constant;
 import truclam.library.truc_lam_library.constant.ResponseObject;
 import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.service.BookService;
@@ -71,12 +73,21 @@ public class BookController {
         return bookService.getList(category, search, page, size, order, column, isContaining);
     }
 
-    @GetMapping("/specialSearch/{page}/{size}")
-    public ResponseObject specialSearch(@RequestParam String searchText,
-                                        @PathVariable Integer page,
-                                        @RequestParam String category,
-                                        @PathVariable Integer size) {
-        return bookService.specialSearch(category ,searchText, page, size);
+    @GetMapping("/specialSearch/{page}")
+    public Page<List<Map<String, Object>>> specialSearch(@RequestParam String searchText,
+                                                         @PathVariable Integer page,
+                                                         @RequestParam String category) {
+        return bookService.specialSearch(category ,searchText, page, Constant.PAGE_SIZE);
+    }
+
+    @GetMapping("/ByCategory/{cateId}")
+    public ResponseObject getBooksByCate(@RequestParam Integer page,
+                                   @PathVariable Integer cateId) {
+        return bookService.getBooksByCate(page, Constant.PAGE_SIZE,  cateId);
+    }
+    @GetMapping("getBooksWithCategories")
+    public ResponseObject getBooksWithCategories() {
+        return bookService.getBooksWithCategories();
     }
 
     @GetMapping

@@ -10,13 +10,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import truclam.library.truc_lam_library.constant.*;
 import truclam.library.truc_lam_library.entity.Book;
+import truclam.library.truc_lam_library.entity.Category;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
+import truclam.library.truc_lam_library.repository.CategoryRepository;
 import truclam.library.truc_lam_library.repository.PageRepository;
 import truclam.library.truc_lam_library.util.ObjectConvertor;
 import truclam.library.truc_lam_library.util.PageUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -27,6 +30,9 @@ public class BookServiceImpl implements BookService {
 
     @Autowired
     PageRepository pageRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
     @Override
     public ResponseObject getBookDetails(Integer id) {
         ResponseObject responseObject = new ResponseObject();
@@ -47,6 +53,54 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book getById(Integer id) {
         return bookRepository.findById(id).get();
+    }
+
+    @Override
+    public ResponseObject getBooksByCate(Integer page,Integer size, Integer cateId) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap;
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Book> pageObject = bookRepository.findByCate(cateId, pageable);
+        if (pageObject.hasContent()) {
+            List<Map<String, Object>> bookList = new ArrayList<>();
+            for (Book book : pageObject.getContent()) {
+                Map<String, Object> bookMap = ObjectConvertor.objectToMap(book);
+                bookList.add(bookMap);
+            }
+            resultMap = PageUtil.convertToPageObject(pageObject, bookList);
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
+            responseObject.setContent(resultMap);
+        } else {
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return responseObject;
+        }
+        return responseObject;
+    }
+
+    @Override
+    public ResponseObject getBooks(Integer page) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap;
+        Pageable pageable = PageRequest.of(page - 1, Constant.PAGE_SIZE);
+        Page<Book> pageObject = bookRepository.findAll( pageable);
+        if (pageObject.hasContent()) {
+            List<Map<String, Object>> bookList = new ArrayList<>();
+            for (Book book : pageObject.getContent()) {
+                Map<String, Object> bookMap = ObjectConvertor.objectToMap(book);
+                bookList.add(bookMap);
+            }
+            resultMap = PageUtil.convertToPageObject(pageObject, bookList);
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
+            responseObject.setContent(resultMap);
+        } else {
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return responseObject;
+        }
+        return responseObject;
     }
 
     @Override
@@ -119,57 +173,43 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public ResponseObject specialSearch(String category, String searchText, Integer page, Integer size) {
+    public Page<List<Map<String, Object>>> specialSearch(String category, String searchText, Integer page, Integer size) {
         ResponseObject responseObject = new ResponseObject();
         Map<String, Object> resultMap = new HashMap<>();
         Pageable pageable = PageRequest.of(page-1, size);
-        Page<truclam.library.truc_lam_library.entity.Page> pageObject = null;
+        Page<List<Map<String, Object>>> pageObject = null;
         if(category!=null && "*".equals(category)) {
             pageObject = pageRepository.findByContentContaining(searchText, pageable);
         }else{
             pageObject = pageRepository.findByContentAndCategory(searchText, category, pageable);
         }
-        if(pageObject.hasContent()){
-            for (truclam.library.truc_lam_library.entity.Page p : pageObject.getContent()) {
-                if(p.getBook() != null){
-                    p.getBook().setTableContents(null);
-                    if(p.getBook().getCategory()!=null){
-                        p.getBook().getCategory().setBooks(null);
-                    }
-                }
-            }
-
-            responseObject.setStatus(StatusEnum.OK.toString());
-            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
-            responseObject.setContent(resultMap);
-        }else {
-            responseObject.setStatus(StatusEnum.NOK.toString());
-            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
-            return responseObject;
-        }
-        return responseObject;
+        return pageObject;
     }
 
     @Override
-    public ResponseObject getBooks(Integer page) {
+    public ResponseObject getBooksWithCategories() {
         ResponseObject responseObject = new ResponseObject();
-        Map<String, Object> resultMap;
-        Pageable pageable = PageRequest.of(page-1, Constant.PAGE_SIZE);
-        Page<Book> pageObject = bookRepository.findAll(pageable);
-        if(pageObject.hasContent()){
-            List<Map<String, Object>> bookList = new ArrayList<>();
-            for (Book book : pageObject.getContent()) {
-                Map<String, Object> bookMap = ObjectConvertor.objectToMap(book);
-                bookList.add(bookMap);
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> categories = categoryRepository.findAllForHome();
+        for (Map<String, Object> c: categories) {
+            Map<String, Object> categoryMap= new HashMap<>();
+            List<Book> books = bookRepository.findFirst4ByCate((Integer) c.get("id"));
+            for (Book b: books) {
+                b.setTableContents(null);
+                b.setCategory(null);
             }
-            resultMap = PageUtil.convertToPageObject(pageObject, bookList);
+            categoryMap.put("books", books);
+            categoryMap.putAll(c);
+            result.add(categoryMap);
+        }
+        if(result.size()>0) {
             responseObject.setStatus(StatusEnum.OK.toString());
             responseObject.setMessage(SuccessMessage.BOOK_FOUND);
-            responseObject.setContent(resultMap);
-        }else {
+            responseObject.setContent(result);
+        }else{
             responseObject.setStatus(StatusEnum.NOK.toString());
             responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
-            return responseObject;
+            responseObject.setContent(new ArrayList<>());
         }
         return responseObject;
     }
