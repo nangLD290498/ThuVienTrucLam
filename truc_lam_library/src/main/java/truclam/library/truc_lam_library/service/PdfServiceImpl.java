@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.*;
@@ -91,6 +94,11 @@ public class PdfServiceImpl implements PdfService{
             respose.setMessage(ErrorMessage.NOT_PDF);
             return respose;
         }
+        if(!picName.endsWith(".jpg") && !picName.endsWith(".png")){
+            respose.setStatus(StatusEnum.NOK.toString());
+            respose.setMessage(ErrorMessage.NOT_IMAGE);
+            return respose;
+        }
         String filePath = path.concat(String.valueOf(book.getId())).concat(splitting).concat("pdf");
         String picPath = path.concat(String.valueOf(book.getId())).concat(splitting).concat("images");
         filePath = FileUploadUtil.saveFile(fileName, multipartFile, filePath);
@@ -154,6 +162,7 @@ public class PdfServiceImpl implements PdfService{
         logger.info("Saving book infor...");
         ResponseObject resSave = saveBookInfor(book);
         if(resSave.getStatus().equals(StatusEnum.NOK.toString())) return resSave;
+
 
         logger.info("uploading pdf...");
         ResponseObject res = upload(multipartFile, thumbnailPic, (Book) resSave.getContent());
