@@ -85,6 +85,13 @@ public class BookController {
                                    @PathVariable Integer cateId) {
         return bookService.getBooksByCate(page, Constant.PAGE_SIZE,  cateId);
     }
+
+    @GetMapping("/ByAuthor")
+    public ResponseObject getBooksByAuthor(@RequestParam Integer page,
+                                         @RequestParam String author) {
+        return bookService.getBooksByAuthor(page, Constant.PAGE_SIZE,  author);
+    }
+
     @GetMapping("getBooksWithCategories")
     public ResponseObject getBooksWithCategories() {
         return bookService.getBooksWithCategories();

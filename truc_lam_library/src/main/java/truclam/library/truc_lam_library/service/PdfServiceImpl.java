@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -161,17 +162,26 @@ public class PdfServiceImpl implements PdfService{
 
         logger.info("Saving book infor...");
         ResponseObject resSave = saveBookInfor(book);
-        if(resSave.getStatus().equals(StatusEnum.NOK.toString())) return resSave;
+        if(resSave.getStatus().equals(StatusEnum.NOK.toString())) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return resSave;
+        }
 
 
         logger.info("uploading pdf...");
         ResponseObject res = upload(multipartFile, thumbnailPic, (Book) resSave.getContent());
-        if(res.getStatus().equals(StatusEnum.NOK.toString())) return res;
+        if(res.getStatus().equals(StatusEnum.NOK.toString())) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return res;
+        }
         String fileName = ((Map<String, String>) res.getContent()).get("fileName");
 
         logger.info("Saving book content...");
         res = savePdfByPage(fileName.substring(0, fileName.length()-4), book.getName(), book.getId());
-        if(res.getStatus().equals(StatusEnum.NOK.toString())) return res;
+        if(res.getStatus().equals(StatusEnum.NOK.toString())) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return res;
+        }
 
         logger.info("saving headers of book...");
         saveContentTable(headerlist, (Book) resSave.getContent(), null);

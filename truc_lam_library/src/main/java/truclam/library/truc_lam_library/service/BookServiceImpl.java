@@ -56,6 +56,30 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public ResponseObject getBooksByAuthor(Integer page, Integer pageSize, String author) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Book> pageObject = bookRepository.findByAuthor(author, pageable);
+        if (pageObject.hasContent()) {
+            List<Map<String, Object>> bookList = new ArrayList<>();
+            for (Book book : pageObject.getContent()) {
+                Map<String, Object> bookMap = ObjectConvertor.objectToMap(book);
+                bookList.add(bookMap);
+            }
+            resultMap = PageUtil.convertToPageObject(pageObject, bookList);
+            responseObject.setStatus(StatusEnum.OK.toString());
+            responseObject.setMessage(SuccessMessage.BOOK_FOUND);
+            responseObject.setContent(resultMap);
+        } else {
+            responseObject.setStatus(StatusEnum.NOK.toString());
+            responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            return responseObject;
+        }
+        return responseObject;
+    }
+
+    @Override
     public ResponseObject getBooksByCate(Integer page,Integer size, Integer cateId) {
         ResponseObject responseObject = new ResponseObject();
         Map<String, Object> resultMap;
@@ -101,6 +125,15 @@ public class BookServiceImpl implements BookService {
             return responseObject;
         }
         return responseObject;
+    }
+
+    @Override
+    public Page<List<Map<String, Object>>> getAuthors(Integer page, Integer pageSize) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap = new HashMap<>();
+        Pageable pageable = PageRequest.of(page-1, pageSize);
+        Page<List<Map<String, Object>>> pageObject = bookRepository.getAuthors(pageable);
+        return pageObject;
     }
 
     @Override

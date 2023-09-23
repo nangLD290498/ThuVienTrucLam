@@ -15,4 +15,8 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query(value = "SELECT id, name FROM category",
             nativeQuery = true)
     List<Map<String, Object>> findAllForHome();
+
+    @Query(value = "SELECT id, name, (SELECT count(*) FROM book b WHERE b.category_id = c.id) FROM category c",
+            nativeQuery = true)
+    List<Map<String, Object>> getForListing();
 }

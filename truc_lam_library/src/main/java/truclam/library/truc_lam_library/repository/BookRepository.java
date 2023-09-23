@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import truclam.library.truc_lam_library.entity.Book;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Integer> {
@@ -32,4 +33,10 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
             nativeQuery = true)
     List<Book> findFirst4ByCate(Integer cateId);
 
+    @Query(value = "SELECT b.author, COUNT(b.id) FROM book b GROUP BY b.author ORDER BY b.author",
+            countQuery ="SELECT COUNT(*) FROM (SELECT b.author FROM book b GROUP BY b.author)",
+            nativeQuery = true)
+    Page<List<Map<String, Object>>> getAuthors(Pageable pageable);
+
+    Page<Book> findByAuthor(String author, Pageable pageable);
 }

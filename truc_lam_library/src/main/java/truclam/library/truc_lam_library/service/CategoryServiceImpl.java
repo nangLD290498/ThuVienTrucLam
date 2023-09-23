@@ -10,6 +10,7 @@ import truclam.library.truc_lam_library.repository.CategoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +21,11 @@ public class CategoryServiceImpl implements CategoryService{
     @Override
     public ResponseObject getCategories() {
         ResponseObject result = new ResponseObject();
-        List<Category> categories = categoryRepository.findAll();
+        List<Map<String, Object>> categories = categoryRepository.getForListing();
         if(categories.size()>0) {
             result.setStatus(StatusEnum.OK.toString());
             result.setMessage(SuccessMessage.BOOK_FOUND);
-            result.setContent(categories.stream().map(i -> i.getName()).collect(Collectors.toList()));
+            result.setContent(categories);
             return result;
         }
         result.setStatus(StatusEnum.OK.toString());
@@ -32,4 +33,5 @@ public class CategoryServiceImpl implements CategoryService{
         result.setContent(new ArrayList<>());
         return result;
     }
+
 }

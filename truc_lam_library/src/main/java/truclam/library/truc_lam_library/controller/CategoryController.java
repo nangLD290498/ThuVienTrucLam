@@ -20,4 +20,5 @@ public class CategoryController {
     public ResponseObject getAll() {
         return categoryService.getCategories();
     }
+
 }
