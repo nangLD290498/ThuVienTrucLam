@@ -13,8 +13,12 @@ import java.util.Map;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
 
+    @Query(value = "select count(*) from page where book_id = ?1",
+            nativeQuery = true)
+    Integer countByBookId(Integer bookId);
+
     @Query(value = "select " +
-            "c.name as category, b.name as book_name, b.author, tc.id as header_id, tc.header_content, " +
+            "b.id, c.name as category, b.name as book_name, b.author, tc.id as header_id, tc.header_content, " +
             "concat( " +
             "right(split_part(upper(t.content), upper(?1), generate_series(1, t.times)),30), " +
             "    upper(?1), " +
@@ -55,7 +59,7 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
     org.springframework.data.domain.Page<List<Map<String, Object>>> findByContentContaining(String content, Pageable pageable);
 
     @Query(value = "select " +
-            "c.name as category, b.name as book_name, b.author, tc.id as header_id, tc.header_content, " +
+            "b.id, c.name as category, b.name as book_name, b.author, tc.id as header_id, tc.header_content, " +
             "concat( " +
             "right(split_part(upper(t.content), upper(?1), generate_series(1, t.times)),30), " +
             "    upper(?1), " +

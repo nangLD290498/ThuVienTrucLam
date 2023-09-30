@@ -37,10 +37,14 @@ public class BookServiceImpl implements BookService {
     public ResponseObject getBookDetails(Integer id) {
         ResponseObject responseObject = new ResponseObject();
         Optional<Book> b = bookRepository.findById(id);
+        Integer count = pageRepository.countByBookId(id);
         if(b.isPresent()){
             responseObject.setStatus(StatusEnum.OK.toString());
             responseObject.setMessage(SuccessMessage.BOOK_FOUND);
-            responseObject.setContent(ObjectConvertor.objectToMap(b.get()));
+            Map<String, Object> result = new HashMap<>();
+            result.put("pageCount", count);
+            result.put("book", ObjectConvertor.objectToMap(b.get()));
+            responseObject.setContent(result);
             logger.info("book found : {}",  b.get());
         }else{
             responseObject.setStatus(StatusEnum.NOK.toString());
