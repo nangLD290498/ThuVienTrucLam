@@ -84,6 +84,20 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Page<List<Map<String, Object>>> getPublishers(Integer page, Integer pageSize) {
+        ResponseObject responseObject = new ResponseObject();
+        Map<String, Object> resultMap = new HashMap<>();
+        Pageable pageable = null;
+        if(page!=-1){
+            pageable = PageRequest.of(page-1, pageSize);
+        }else {
+            pageable = PageRequest.of(0, Integer.MAX_VALUE);
+        }
+        Page<List<Map<String, Object>>> pageObject = bookRepository.getPublishers(pageable);
+        return pageObject;
+    }
+
+    @Override
     public ResponseObject getBooksByCate(Integer page,Integer size, Integer cateId) {
         ResponseObject responseObject = new ResponseObject();
         Map<String, Object> resultMap;
@@ -135,7 +149,12 @@ public class BookServiceImpl implements BookService {
     public Page<List<Map<String, Object>>> getAuthors(Integer page, Integer pageSize) {
         ResponseObject responseObject = new ResponseObject();
         Map<String, Object> resultMap = new HashMap<>();
-        Pageable pageable = PageRequest.of(page-1, pageSize);
+        Pageable pageable = null;
+        if(page!=-1){
+            pageable = PageRequest.of(page-1, pageSize);
+        }else {
+            pageable = PageRequest.of(0, Integer.MAX_VALUE);
+        }
         Page<List<Map<String, Object>>> pageObject = bookRepository.getAuthors(pageable);
         return pageObject;
     }

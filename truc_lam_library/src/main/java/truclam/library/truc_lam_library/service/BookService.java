@@ -27,4 +27,6 @@ public interface BookService {
     Page<List<Map<String, Object>>> getAuthors(Integer page, Integer pageSize);
 
     ResponseObject getBooksByAuthor(Integer page, Integer pageSize, String author);
+
+    Page<List<Map<String, Object>>> getPublishers(Integer page, Integer pageSize);
 }

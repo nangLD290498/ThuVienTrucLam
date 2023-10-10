@@ -38,5 +38,10 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
             nativeQuery = true)
     Page<List<Map<String, Object>>> getAuthors(Pageable pageable);
 
+    @Query(value = "SELECT b.publisher FROM book b GROUP BY b.publisher ORDER BY b.publisher",
+            countQuery ="SELECT COUNT(*) FROM (SELECT b.publisher FROM book b GROUP BY b.publisher)",
+            nativeQuery = true)
+    Page<List<Map<String, Object>>> getPublishers(Pageable pageable);
+
     Page<Book> findByAuthor(String author, Pageable pageable);
 }
