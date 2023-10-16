@@ -138,6 +138,24 @@ public class PdfServiceImpl implements PdfService{
         return respose;
     }
 
+    public ResponseObject updateBookInfor(Book book) {
+        ResponseObject respose = new ResponseObject();
+        //save book infor to db
+        Book existing = bookRepository.getReferenceById(book.getId());
+        book.setPdfUrl(existing.getPdfUrl());
+        book.setThumbnailUrl(existing.getThumbnailUrl());
+
+        Category category = categoryRepository.findByName(book.getCategory().getName());
+        if(category!=null){
+            book.setCategory(category);
+        }
+        Book savedBook = bookRepository.save(book);
+        respose.setStatus(StatusEnum.OK.toString());
+        respose.setMessage(SuccessMessage.SAVED_BOOK_INFO);
+        respose.setContent(savedBook);
+        return respose;
+    }
+
     public ResponseObject saveContentTable(Map<String, Object> mapData) {
         ResponseObject respose = new ResponseObject();
         String bookName = mapData.get("bookName").toString();
@@ -167,7 +185,6 @@ public class PdfServiceImpl implements PdfService{
             return resSave;
         }
 
-
         logger.info("uploading pdf...");
         ResponseObject res = upload(multipartFile, thumbnailPic, (Book) resSave.getContent());
         if(res.getStatus().equals(StatusEnum.NOK.toString())) {
@@ -193,6 +210,26 @@ public class PdfServiceImpl implements PdfService{
     }
 
     @Override
+    public ResponseObject updateBook(Book book, List<Map<String, Object>> headerlist){
+        ResponseObject respose = new ResponseObject<>();
+
+        logger.info("Updating book infor...");
+        ResponseObject resSave = updateBookInfor(book);
+        if(resSave.getStatus().equals(StatusEnum.NOK.toString())) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return resSave;
+        }
+        logger.info("saving headers of book...");
+        saveContentTable(headerlist, (Book) resSave.getContent(), null);
+
+        respose.setStatus(StatusEnum.OK.toString());
+        respose.setMessage(SuccessMessage.UPDATED_BOOK);
+        //respose.setContent(resSave.getContent());
+
+        return respose;
+    }
+
+    @Override
     public ResponseObject getPDF(Integer id) {
         ResponseObject responseObject = new ResponseObject();
         Optional<Book> b = bookRepository.findById(id);
@@ -208,6 +245,7 @@ public class PdfServiceImpl implements PdfService{
         }
         return responseObject;
     }
+
 
     public void saveContentTable(List<Map<String, Object>> childs,Book book , TableContent parent){
         List<TableContent> tableContents = new ArrayList<>();

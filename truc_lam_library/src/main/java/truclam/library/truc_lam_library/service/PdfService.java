@@ -14,4 +14,6 @@ public interface PdfService {
     ResponseObject saveBookFullFlow(Book book, List<Map<String, Object>> headerlist, MultipartFile multipartFile, MultipartFile thumbnailPic) throws IOException;
 
     ResponseObject getPDF(Integer id);
+
+    ResponseObject updateBook(Book book, List<Map<String, Object>> tableContentList);
 }

@@ -2,6 +2,7 @@ package truclam.library.truc_lam_library.repository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import truclam.library.truc_lam_library.entity.Page;
@@ -12,6 +13,11 @@ import java.util.Map;
 
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
+
+    @Modifying
+    @Query(value = "delete from page where book_id = ?1",
+            nativeQuery = true)
+    void deleteByBook(Integer bId);
 
     @Query(value = "select count(*) from page where book_id = ?1",
             nativeQuery = true)

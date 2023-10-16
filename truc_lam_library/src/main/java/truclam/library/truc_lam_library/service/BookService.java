@@ -29,4 +29,6 @@ public interface BookService {
     ResponseObject getBooksByAuthor(Integer page, Integer pageSize, String author);
 
     Page<List<Map<String, Object>>> getPublishers(Integer page, Integer pageSize);
+
+    ResponseObject deleteBook(Integer id);
 }

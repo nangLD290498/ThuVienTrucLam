@@ -57,9 +57,31 @@ public class BookController {
         return pdfService.saveBookFullFlow(book, tableContentList, multipartFile, thumbnailPic);
     }
 
+    @PostMapping("update")
+    public ResponseObject updateBook(@RequestParam String bookString,
+                                           @RequestParam String tableContent
+    ) throws IOException {
+        //Base64 to json string
+        byte[] decodedBytesBook = Base64.getDecoder().decode(bookString);
+        bookString = new String(decodedBytesBook);
+
+        byte[] decodedBytesTableContent = Base64.getDecoder().decode(tableContent);
+        tableContent = new String(decodedBytesTableContent);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Book book = mapper.readValue(bookString, Book.class);
+        List<Map<String, Object>> tableContentList = mapper.readValue(tableContent, new TypeReference<List<Map<String, Object>>>(){});
+        return pdfService.updateBook(book, tableContentList);
+    }
+
     @GetMapping("/{id}")
     public ResponseObject getBookByid(@PathVariable Integer id) {
         return bookService.getBookDetails(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseObject deleteBook(@PathVariable Integer id) {
+        return bookService.deleteBook(id);
     }
 
     @GetMapping("/{page}/{size}/{order}/{column}")

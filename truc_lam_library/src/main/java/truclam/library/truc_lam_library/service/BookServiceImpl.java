@@ -1,13 +1,19 @@
 package truclam.library.truc_lam_library.service;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 import truclam.library.truc_lam_library.constant.*;
 import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.entity.Category;
@@ -15,9 +21,19 @@ import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.repository.BookRepository;
 import truclam.library.truc_lam_library.repository.CategoryRepository;
 import truclam.library.truc_lam_library.repository.PageRepository;
+import truclam.library.truc_lam_library.repository.TableContentRepository;
 import truclam.library.truc_lam_library.util.ObjectConvertor;
 import truclam.library.truc_lam_library.util.PageUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +49,13 @@ public class BookServiceImpl implements BookService {
 
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    TableContentRepository tableContentRepository;
+
+    @Value("${filePath}")
+    String path;
+
     @Override
     public ResponseObject getBookDetails(Integer id) {
         ResponseObject responseObject = new ResponseObject();
@@ -95,6 +118,35 @@ public class BookServiceImpl implements BookService {
         }
         Page<List<Map<String, Object>>> pageObject = bookRepository.getPublishers(pageable);
         return pageObject;
+    }
+
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+    @Override
+    @Transactional
+    public ResponseObject deleteBook(Integer id) {
+        logger.info("Delete book: {} ", id);
+        Map<String, Object> cateObj = bookRepository.countCateByBookId(id);
+        pageRepository.deleteByBook(id);
+        tableContentRepository.deleteByBook(id);
+        bookRepository.deleteBook(id);
+        if(Objects.equals((BigInteger) cateObj.get("count"), BigInteger.ONE)){
+            categoryRepository.deleteById((Integer) cateObj.get("cateid"));
+        }
+        logger.info("Deleted book: {} ", id);
+        logger.info("Delete pdf directory");
+        try {
+            Path uploadPath = Paths.get(path.concat(String.valueOf(id)));
+            File file = uploadPath.toFile();
+            FileUtils.deleteDirectory(file);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        ResponseObject<String> responseObject = new ResponseObject<>();
+        responseObject.setMessage(SuccessMessage.DELETED_BOOK);
+        responseObject.setStatus(StatusEnum.OK.toString());
+        return responseObject;
     }
 
     @Override

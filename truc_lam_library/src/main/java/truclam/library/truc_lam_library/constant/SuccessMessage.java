@@ -6,6 +6,8 @@ public class SuccessMessage {
     public final static String PDF_FOUND = "pdf found.";
     public final static String SAVED_BOOK_INFO = "book information saved.";
     public final static String SAVED_BOOK = "book saved.";
+    public final static String UPDATED_BOOK = "book updated.";
+    public final static String DELETED_BOOK = "book deleted.";
 
     public final static String SAVED_TABLE_CONTENT = "table of content saved.";
 }
