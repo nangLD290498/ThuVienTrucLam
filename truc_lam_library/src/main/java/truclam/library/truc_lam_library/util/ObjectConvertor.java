@@ -8,10 +8,8 @@ import truclam.library.truc_lam_library.entity.Book;
 import truclam.library.truc_lam_library.entity.TableContent;
 import truclam.library.truc_lam_library.service.BookServiceImpl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ObjectConvertor {
     static Logger logger = LoggerFactory.getLogger(BookServiceImpl.class);
@@ -35,6 +33,9 @@ public class ObjectConvertor {
             }
         }
         List<Map<String, Object>> tableContentFormatted = findChildrenHeaders(book.getTableContents(), null);
+        tableContentFormatted = tableContentFormatted == null ? null :
+                tableContentFormatted.stream().sorted(Comparator.comparing(a -> ((Integer) a.get("id"))))
+                .collect(Collectors.toList());
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> bookMap = objectMapper.convertValue(book, new TypeReference<Map<String, Object>>() {});
         bookMap.remove("tableContents");
@@ -50,6 +51,7 @@ public class ObjectConvertor {
             List<Map<String, Object>> childs = new ArrayList<>();
             if(header.getParent() == parent) {
                 logger.info("processing header: {}",header.toString());
+                headerAfter.put("id", header.getId());
                 headerAfter.put("headerContent", header.getHeaderContent());
                 headerAfter.put("fromPage", header.getFromPage());
                 headerAfter.put("toPage", header.getToPage());

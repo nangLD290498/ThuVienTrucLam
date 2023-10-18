@@ -150,6 +150,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
+    public void deleteTableContentNoBook() {
+        tableContentRepository.deleteNoBook();
+    }
+
+
+    @Override
     public ResponseObject getBooksByCate(Integer page,Integer size, Integer cateId) {
         ResponseObject responseObject = new ResponseObject();
         Map<String, Object> resultMap;

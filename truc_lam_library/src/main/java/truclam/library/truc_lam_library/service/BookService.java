@@ -31,4 +31,6 @@ public interface BookService {
     Page<List<Map<String, Object>>> getPublishers(Integer page, Integer pageSize);
 
     ResponseObject deleteBook(Integer id);
+
+    void deleteTableContentNoBook();
 }

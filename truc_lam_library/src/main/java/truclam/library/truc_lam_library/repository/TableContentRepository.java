@@ -14,4 +14,9 @@ public interface TableContentRepository extends JpaRepository<TableContent, Inte
     @Query(value = "delete from table_content where book_id = ?1",
             nativeQuery = true)
     void deleteByBook(Integer bId);
+
+    @Modifying
+    @Query(value = "delete from table_content where book_id is null",
+            nativeQuery = true)
+    void deleteNoBook();
 }

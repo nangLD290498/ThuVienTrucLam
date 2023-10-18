@@ -84,6 +84,13 @@ public class BookController {
         return bookService.deleteBook(id);
     }
 
+    @DeleteMapping("/deleteTableContentNoBook")
+    public String deleteTableContentNoBook() {
+         bookService.deleteTableContentNoBook();
+         return "OK";
+    }
+
+
     @GetMapping("/{page}/{size}/{order}/{column}")
     public ResponseObject getBookList(@RequestParam(required = false) String category,
                                         @RequestParam(required = false) String search,

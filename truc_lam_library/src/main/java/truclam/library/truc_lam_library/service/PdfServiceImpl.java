@@ -221,7 +221,6 @@ public class PdfServiceImpl implements PdfService{
         }
         logger.info("saving headers of book...");
         saveContentTable(headerlist, (Book) resSave.getContent(), null);
-
         respose.setStatus(StatusEnum.OK.toString());
         respose.setMessage(SuccessMessage.UPDATED_BOOK);
         //respose.setContent(resSave.getContent());
