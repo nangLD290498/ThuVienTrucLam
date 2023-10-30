@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.ResponseObject;
@@ -23,6 +24,7 @@ public class PdfController {
     PdfService pdfService;
 
     @PostMapping("/pdf/saveBookFullFlow")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseObject saveBookFullFlow(@RequestParam String bookString,
                                            @RequestParam String tableContent,
                                            @RequestParam("file") MultipartFile multipartFile,

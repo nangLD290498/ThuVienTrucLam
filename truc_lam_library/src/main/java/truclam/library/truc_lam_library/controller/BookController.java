@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import truclam.library.truc_lam_library.constant.Constant;
@@ -38,7 +39,8 @@ public class BookController {
     @Autowired
     PdfService pdfService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseObject saveBookFullFlow(@RequestParam String bookString,
                                            @RequestParam String tableContent,
                                            @RequestParam("file") MultipartFile multipartFile,
@@ -58,6 +60,7 @@ public class BookController {
     }
 
     @PostMapping("update")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseObject updateBook(@RequestParam String bookString,
                                            @RequestParam String tableContent
     ) throws IOException {
@@ -79,12 +82,14 @@ public class BookController {
         return bookService.getBookDetails(id);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseObject deleteBook(@PathVariable Integer id) {
         return bookService.deleteBook(id);
     }
 
     @DeleteMapping("/deleteTableContentNoBook")
+    @PreAuthorize("hasRole('ADMIN')")
     public String deleteTableContentNoBook() {
          bookService.deleteTableContentNoBook();
          return "OK";

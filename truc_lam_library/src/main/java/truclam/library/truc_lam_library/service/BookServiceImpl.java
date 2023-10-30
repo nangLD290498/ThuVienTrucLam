@@ -294,9 +294,9 @@ public class BookServiceImpl implements BookService {
         Pageable pageable = PageRequest.of(page-1, size);
         Page<List<Map<String, Object>>> pageObject = null;
         if(category!=null && "*".equals(category)) {
-            pageObject = pageRepository.findByContentContaining(searchText, pageable);
+            pageObject = pageRepository.findByContentContaining(searchText.replaceAll("\\s+"," ").trim(), pageable);
         }else{
-            pageObject = pageRepository.findByContentAndCategory(searchText, category, pageable);
+            pageObject = pageRepository.findByContentAndCategory(searchText.replaceAll("\\s+"," ").trim(), category, pageable);
         }
         return pageObject;
     }
