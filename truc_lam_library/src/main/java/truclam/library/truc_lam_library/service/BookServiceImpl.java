@@ -199,6 +199,7 @@ public class BookServiceImpl implements BookService {
         } else {
             responseObject.setStatus(StatusEnum.NOK.toString());
             responseObject.setMessage(ErrorMessage.BOOK_NOT_FOUND);
+            responseObject.setContent(PageUtil.emptyPageObj());
             return responseObject;
         }
         return responseObject;
