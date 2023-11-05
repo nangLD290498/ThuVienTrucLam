@@ -77,7 +77,7 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
                     "tc.from_page <= t.page_no and " +
                     "tc.to_page >= t.page_no) M " +
                     "GROUP BY M.ID, M.publisher, M.published_year, M.category, M.book_name, M.author, M.CONTENT, M.page_no " +
-                    ") x",
+                    ")",
             nativeQuery = true)
     org.springframework.data.domain.Page<List<Map<String, Object>>> findByContentContaining(String content, Pageable pageable);
 
@@ -139,7 +139,7 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
                     "tc.from_page <= t.page_no and " +
                     "tc.to_page >= t.page_no) M " +
                     "GROUP BY M.ID, M.publisher, M.published_year, M.category, M.book_name, M.author, M.CONTENT, M.page_no "+
-                    ") x",
+                    ") ",
             nativeQuery = true)
     org.springframework.data.domain.Page<List<Map<String, Object>>> findByContentAndCategory(String content, String category, Pageable pageable);
 }
